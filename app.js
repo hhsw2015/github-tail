@@ -15,10 +15,6 @@ async function loadProjects(isAutoRefresh = false) {
     const newLastUpdated = data.last_updated;
     const hasChanges = lastUpdated && newLastUpdated !== lastUpdated;
 
-    if (hasChanges && isAutoRefresh) {
-      showUpdateNotification();
-    }
-
     lastUpdated = newLastUpdated;
     projects = data.projects || [];
     filteredProjects = [...projects];
@@ -28,9 +24,19 @@ async function loadProjects(isAutoRefresh = false) {
     }
 
     updateMeta(data);
-    applyFilters();
 
-    if (isAutoRefresh) {
+    // Lógica de navegación según contexto
+    if (!isAutoRefresh) {
+      // Carga inicial: siempre ir a página 1
+      applyFilters();
+    } else if (hasChanges) {
+      // Auto-refresh CON cambios: volver a página 1 y notificar
+      showUpdateNotification();
+      applyFilters(); // Resetea a página 1
+      updateRefreshIndicator('updated');
+    } else {
+      // Auto-refresh SIN cambios: mantener página actual
+      applyFiltersKeepPage();
       updateRefreshIndicator('updated');
     }
 
@@ -163,28 +169,54 @@ function renderPage() {
   document.getElementById("page-info").textContent =
     `Página ${currentPage} de ${totalPages}`;
 
+  document.getElementById("first-page").disabled = currentPage <= 1;
   document.getElementById("prev-page").disabled = currentPage <= 1;
   document.getElementById("next-page").disabled = currentPage >= totalPages;
+  document.getElementById("last-page").disabled = currentPage >= totalPages;
 }
 
 function setupPagination() {
+  // Botón: Primera página
+  document.getElementById("first-page").addEventListener("click", () => {
+    if (currentPage > 1) {
+      currentPage = 1;
+      renderPage();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  });
+
+  // Botón: Página anterior
   document.getElementById("prev-page").addEventListener("click", () => {
     if (currentPage > 1) {
       currentPage--;
       renderPage();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   });
 
+  // Botón: Página siguiente
   document.getElementById("next-page").addEventListener("click", () => {
     const totalPages = Math.max(1, Math.ceil(filteredProjects.length / pageSize));
     if (currentPage < totalPages) {
       currentPage++;
       renderPage();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  });
+
+  // Botón: Última página
+  document.getElementById("last-page").addEventListener("click", () => {
+    const totalPages = Math.max(1, Math.ceil(filteredProjects.length / pageSize));
+    if (currentPage < totalPages) {
+      currentPage = totalPages;
+      renderPage();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   });
 }
 
-function applyFilters() {
+function applyFiltersKeepPage() {
+  // Aplica filtros sin resetear la página actual
   const searchTerm = document.getElementById("search-input").value.toLowerCase().trim();
   const minStars = parseInt(document.getElementById("min-stars-input").value || "0", 10);
 
@@ -202,6 +234,13 @@ function applyFilters() {
     return meetsStarRequirement && meetsSearchRequirement;
   });
 
+  // No cambiar currentPage, solo re-renderizar
+  renderPage();
+}
+
+function applyFilters() {
+  // Aplica filtros y resetea a página 1
+  applyFiltersKeepPage();
   currentPage = 1;
   renderPage();
 }

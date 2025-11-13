@@ -66,14 +66,6 @@ def main():
             stars_query += f" pushed:>{formatted_date}"
             print(f"🔍 Buscando repos actualizados después de {formatted_date}", file=sys.stderr)
 
-    params = {
-        "q": stars_query,
-        "sort": "updated",
-        "order": "desc",
-        "per_page": min(max_results, 100),  # API limita a 100 por página
-        "page": 1
-    }
-
     headers = {
         "Accept": "application/vnd.github+json",
         "User-Agent": "github-tail-fetcher",
@@ -83,23 +75,47 @@ def main():
     if token:
         headers["Authorization"] = f"Bearer {token}"
 
-    print(f"🌐 Llamando a GitHub Search API...", file=sys.stderr)
-    resp = requests.get(url, params=params, headers=headers, timeout=20)
+    # GitHub API limita a 100 repos por página, necesitamos múltiples llamadas
+    repos = []
+    pages_needed = (max_results + 99) // 100  # Redondear hacia arriba
 
-    # Manejo de rate limit
-    if resp.status_code == 403:
-        remaining = resp.headers.get("X-RateLimit-Remaining", "?")
-        reset = resp.headers.get("X-RateLimit-Reset", "?")
-        print(f"ERROR: Rate limit alcanzado. Remaining: {remaining}, Reset: {reset}", file=sys.stderr)
-        sys.exit(1)
+    print(f"🌐 Llamando a GitHub Search API ({pages_needed} página(s))...", file=sys.stderr)
 
-    resp.raise_for_status()
-    data = resp.json()
-    repos = data.get("items", [])
+    for page in range(1, pages_needed + 1):
+        params = {
+            "q": stars_query,
+            "sort": "updated",
+            "order": "desc",
+            "per_page": 100,
+            "page": page
+        }
+
+        print(f"  📄 Página {page}/{pages_needed}...", file=sys.stderr)
+        resp = requests.get(url, params=params, headers=headers, timeout=20)
+
+        # Manejo de rate limit
+        if resp.status_code == 403:
+            remaining = resp.headers.get("X-RateLimit-Remaining", "?")
+            reset = resp.headers.get("X-RateLimit-Reset", "?")
+            print(f"ERROR: Rate limit alcanzado. Remaining: {remaining}, Reset: {reset}", file=sys.stderr)
+            sys.exit(1)
+
+        resp.raise_for_status()
+        data = resp.json()
+        page_items = data.get("items", [])
+        repos.extend(page_items)
+
+        # Si esta página tiene menos de 100, no hay más resultados
+        if len(page_items) < 100:
+            break
+
+        # Guardar total_count de la primera página
+        if page == 1:
+            total_available = data.get("total_count", 0)
 
     total_fetched = len(repos)
     print(f"📊 Repos obtenidos en esta consulta: {total_fetched}", file=sys.stderr)
-    print(f"📈 Total disponible en GitHub: {data.get('total_count', '?')}", file=sys.stderr)
+    print(f"📈 Total disponible en GitHub: {total_available if 'total_available' in locals() else '?'}", file=sys.stderr)
 
     # Procesar repos de la consulta actual (sin acumular histórico)
     current_projects = []
@@ -139,7 +155,7 @@ def main():
         },
         "last_updated": datetime.now(timezone.utc).isoformat(),
         "count": len(current_projects),
-        "total_available": data.get("total_count", 0),
+        "total_available": total_available if 'total_available' in locals() else 0,
         "projects": current_projects,
     }
 
