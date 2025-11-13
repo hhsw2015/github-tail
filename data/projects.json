@@ -1,7 +1,7 @@
 {
   "source": {
     "type": "github_user_repos",
-    "user": "",
+    "user": "github_username_will_be_filled_by_action",
     "min_stars": 10
   },
   "last_updated": null,
