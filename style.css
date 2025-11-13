@@ -168,3 +168,111 @@ body {
   opacity:0.5;
   cursor:not-allowed;
 }
+
+/* Auto-refresh indicator */
+.auto-refresh-info {
+  text-align:center;
+  margin:1rem 0;
+  padding:0.5rem;
+}
+
+.refresh-indicator {
+  font-size:0.85rem;
+  padding:0.5rem 1rem;
+  border-radius:4px;
+  display:inline-block;
+  transition:all 0.3s ease;
+}
+
+.refresh-indicator.checking {
+  background:#1e293b;
+  color:#3b82f6;
+  border:1px solid #3b82f6;
+}
+
+.refresh-indicator.updated {
+  background:#0f1f13;
+  color:#22c55e;
+  border:1px solid #166534;
+}
+
+.refresh-indicator.error {
+  background:#1f1414;
+  color:#ef4444;
+  border:1px solid #991b1b;
+}
+
+/* Update notification */
+.update-notification {
+  position:fixed;
+  top:20px;
+  right:20px;
+  background:#1e293b;
+  color:#e5e7eb;
+  padding:1rem 1.5rem;
+  border-radius:8px;
+  border:2px solid #3b82f6;
+  box-shadow:0 10px 25px rgba(0,0,0,0.5);
+  z-index:1000;
+  display:flex;
+  align-items:center;
+  gap:1rem;
+  animation:slideIn 0.3s ease;
+  max-width:400px;
+}
+
+.update-notification button {
+  background:transparent;
+  border:none;
+  color:#94a3b8;
+  cursor:pointer;
+  font-size:1.2rem;
+  padding:0;
+  line-height:1;
+  transition:color 0.2s;
+}
+
+.update-notification button:hover {
+  color:#e5e7eb;
+}
+
+.update-notification.fade-out {
+  animation:slideOut 0.3s ease;
+  opacity:0;
+}
+
+@keyframes slideIn {
+  from {
+    transform:translateX(400px);
+    opacity:0;
+  }
+  to {
+    transform:translateX(0);
+    opacity:1;
+  }
+}
+
+@keyframes slideOut {
+  from {
+    transform:translateX(0);
+    opacity:1;
+  }
+  to {
+    transform:translateX(400px);
+    opacity:0;
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .update-notification {
+    top:10px;
+    right:10px;
+    left:10px;
+    max-width:none;
+  }
+
+  .auto-refresh-info {
+    margin:0.5rem 0;
+  }
+}

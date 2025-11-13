@@ -2,12 +2,24 @@ let projects = [];
 let filteredProjects = [];
 let currentPage = 1;
 const pageSize = 25;
+let lastUpdated = null;
+let pollInterval = null;
+const POLL_INTERVAL_MS = 60000; // Verificar cada 60 segundos
 
-async function loadProjects() {
+async function loadProjects(isAutoRefresh = false) {
   try {
     const res = await fetch("data/projects.json?cb=" + Date.now());
     const data = await res.json();
 
+    // Detectar si hay cambios
+    const newLastUpdated = data.last_updated;
+    const hasChanges = lastUpdated && newLastUpdated !== lastUpdated;
+
+    if (hasChanges && isAutoRefresh) {
+      showUpdateNotification(data.new_in_this_run || 0);
+    }
+
+    lastUpdated = newLastUpdated;
     projects = data.projects || [];
     filteredProjects = [...projects];
 
@@ -16,10 +28,80 @@ async function loadProjects() {
     }
 
     updateMeta(data);
-    renderPage();
+    applyFilters();
+
+    if (isAutoRefresh) {
+      updateRefreshIndicator('updated');
+    }
 
   } catch (err) {
     console.error(err);
+    if (isAutoRefresh) {
+      updateRefreshIndicator('error');
+    }
+  }
+}
+
+function showUpdateNotification(newCount) {
+  const notification = document.createElement('div');
+  notification.className = 'update-notification';
+  notification.innerHTML = `
+    ✨ <strong>${newCount} nuevo${newCount !== 1 ? 's' : ''} repositorio${newCount !== 1 ? 's' : ''}</strong> encontrado${newCount !== 1 ? 's' : ''}!
+    <button onclick="this.parentElement.remove()">✕</button>
+  `;
+  document.body.appendChild(notification);
+
+  // Auto-remover después de 10 segundos
+  setTimeout(() => {
+    if (notification.parentElement) {
+      notification.classList.add('fade-out');
+      setTimeout(() => notification.remove(), 300);
+    }
+  }, 10000);
+}
+
+function updateRefreshIndicator(status) {
+  const indicator = document.getElementById('refresh-indicator');
+  if (!indicator) return;
+
+  const now = new Date().toLocaleTimeString();
+
+  switch(status) {
+    case 'checking':
+      indicator.textContent = `🔄 Verificando actualizaciones...`;
+      indicator.className = 'refresh-indicator checking';
+      break;
+    case 'updated':
+      indicator.textContent = `✓ Última verificación: ${now}`;
+      indicator.className = 'refresh-indicator updated';
+      break;
+    case 'error':
+      indicator.textContent = `⚠️ Error al verificar (${now})`;
+      indicator.className = 'refresh-indicator error';
+      break;
+  }
+}
+
+function startAutoRefresh() {
+  // Limpiar intervalo anterior si existe
+  if (pollInterval) {
+    clearInterval(pollInterval);
+  }
+
+  // Configurar polling automático
+  pollInterval = setInterval(async () => {
+    updateRefreshIndicator('checking');
+    await loadProjects(true);
+  }, POLL_INTERVAL_MS);
+
+  console.log(`Auto-refresh activado: verificando cada ${POLL_INTERVAL_MS/1000}s`);
+}
+
+function stopAutoRefresh() {
+  if (pollInterval) {
+    clearInterval(pollInterval);
+    pollInterval = null;
+    console.log('Auto-refresh desactivado');
   }
 }
 
@@ -142,4 +224,15 @@ document.addEventListener("DOMContentLoaded", () => {
   setupSearch();
   setupMinStarsFilter();
   loadProjects();
+  startAutoRefresh();
+});
+
+// Detener auto-refresh cuando el usuario sale de la página
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) {
+    stopAutoRefresh();
+  } else {
+    startAutoRefresh();
+    loadProjects(true); // Verificar inmediatamente al volver
+  }
 });
