@@ -16,7 +16,7 @@ jobs:
       OUT_PATH: "data/projects.json"
       # Si quieres usar un token personal, crea el secreto GH_API_TOKEN en el repo
       GH_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      MIN_STARS: "10"
+      MIN_STARS: "0"
 
     steps:
       - name: Checkout
@@ -45,4 +45,5 @@ jobs:
           git add data/projects.json
           git diff --cached --quiet && echo "Sin cambios, no se hace commit" && exit 0
           git commit -m "Update projects.json [skip ci]"
+          git pull --rebase origin ${{ github.ref_name }}
           git push

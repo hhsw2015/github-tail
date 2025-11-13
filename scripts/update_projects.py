@@ -38,8 +38,11 @@ def main():
     resp.raise_for_status()
     repos = resp.json()
 
+    print(f"Total de repos obtenidos: {len(repos)}", file=sys.stderr)
+
     # Filtramos primero por estrellas
     repos = [r for r in repos if (r.get("stargazers_count") or 0) >= min_stars]
+    print(f"Repos después de filtrar por estrellas (>= {min_stars}): {len(repos)}", file=sys.stderr)
 
     # Ordenamos y recortamos
     repos_sorted = sorted(

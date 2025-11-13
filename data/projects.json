@@ -2,7 +2,7 @@
   "source": {
     "type": "github_user_repos",
     "user": "github_username_will_be_filled_by_action",
-    "min_stars": 10
+    "min_stars": 0
   },
   "last_updated": null,
   "count": 0,
