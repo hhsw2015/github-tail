@@ -204,6 +204,14 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Powered by [GitHub Search API](https://docs.github.com/en/rest/search)
 - This is an experiment using vibe coding
 
+## ☕ Support
+
+If you find this project useful and want to fuel more coding experiments (and my coffee addiction), consider buying me one! ☕✨
+
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/H2H71OI1ZN)
+
+*My code runs on caffeine and good vibes* 🚀
+
 ---
 
 # 🇪🇸 GitHub Tail - Repositorios Actualizados en Tiempo Real
@@ -411,6 +419,14 @@ Este proyecto está licenciado bajo la Licencia MIT - ver el archivo [LICENSE](L
 - Construido con ❤️ usando GitHub Actions y GitHub Pages
 - Impulsado por [GitHub Search API](https://docs.github.com/en/rest/search)
 - Este es un experimento usando vibe coding
+
+## ☕ Apoyo
+
+Si este proyecto te resulta útil y quieres impulsar más experimentos de código (y mi adicción al café), ¡considera invitarme a uno! ☕✨
+
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/H2H71OI1ZN)
+
+*Mi código funciona con cafeína y buenas vibras* 🚀
 
 ---
 

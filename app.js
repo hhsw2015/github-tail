@@ -212,13 +212,21 @@ function renderPage() {
   document.getElementById("last-page").disabled = currentPage >= totalPages;
 }
 
+function scrollToContent() {
+  // Scroll al inicio del contenedor de proyectos
+  const container = document.getElementById("projects-container");
+  if (container) {
+    container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
+
 function setupPagination() {
   // Botón: Primera página
   document.getElementById("first-page").addEventListener("click", () => {
     if (currentPage > 1) {
       currentPage = 1;
       renderPage();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      scrollToContent();
     }
   });
 
@@ -227,7 +235,7 @@ function setupPagination() {
     if (currentPage > 1) {
       currentPage--;
       renderPage();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      scrollToContent();
     }
   });
 
@@ -237,7 +245,7 @@ function setupPagination() {
     if (currentPage < totalPages) {
       currentPage++;
       renderPage();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      scrollToContent();
     }
   });
 
@@ -247,7 +255,7 @@ function setupPagination() {
     if (currentPage < totalPages) {
       currentPage = totalPages;
       renderPage();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      scrollToContent();
     }
   });
 }

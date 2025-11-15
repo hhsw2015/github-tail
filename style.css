@@ -69,8 +69,11 @@ body {
 .footer-content {
   display:flex;
   flex-direction:column;
-  gap:0.75rem;
+  gap:1rem;
   align-items:center;
+  max-width:900px;
+  margin:0 auto;
+  width:100%;
 }
 
 .footer-info {
@@ -86,11 +89,50 @@ body {
   text-decoration:underline;
 }
 
+.kofi-container {
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:0.5rem;
+  padding:1rem;
+  background:rgba(15, 23, 42, 0.5);
+  border:1px solid #1f2937;
+  border-radius:8px;
+  transition:all 0.3s ease;
+}
+
+.kofi-container:hover {
+  background:rgba(15, 23, 42, 0.8);
+  border-color:#3b82f6;
+  transform:translateY(-2px);
+}
+
+.kofi-text {
+  margin:0;
+  font-size:0.9rem;
+  color:#94a3b8;
+  font-style:italic;
+  animation:pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.8; }
+  50% { opacity: 1; }
+}
+
+#kofi-widget {
+  display:flex;
+  justify-content:center;
+}
+
 @media (min-width: 768px) {
   .footer-content {
-    max-width:900px;
-    margin:0 auto;
-    width:100%;
+    gap:1.5rem;
+  }
+
+  .kofi-container {
+    flex-direction:row;
+    gap:1rem;
   }
 }
 
