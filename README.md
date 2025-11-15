@@ -69,9 +69,11 @@ cd github-tail
 ### 3. Enable GitHub Pages
 
 - Go to **Settings** → **Pages**
-- Source: **Deploy from a branch**
-- Branch: `master` (or `main`), folder: `/ (root)`
+- Source: **GitHub Actions**
+- The workflow will automatically deploy on the first push
 - Wait ~2 minutes for deployment
+
+> **Note:** The repository includes an optimized Pages workflow that only rebuilds when HTML, CSS, or JS files change, not when data updates. This saves CI/CD minutes.
 
 ### 4. Configure Environment Variables (Optional)
 
@@ -155,7 +157,8 @@ Edit `style.css` to customize colors, fonts, and layout. The current theme uses:
 github-tail/
 ├── .github/
 │   └── workflows/
-│       └── update-projects.yml    # GitHub Actions workflow (runs every 5 min)
+│       ├── update-projects.yml    # Data update (runs every 5 min)
+│       └── pages.yml              # Site deployment (only on code changes)
 ├── data/
 │   └── projects.json              # Auto-generated repo data
 ├── scripts/
@@ -163,7 +166,8 @@ github-tail/
 ├── app.js                         # Client-side JavaScript (auto-refresh)
 ├── index.html                     # Main webpage
 ├── style.css                      # Styling
-└── README.md                      # This file
+├── README.md                      # This file
+└── WORKFLOW_OPTIMIZATION.md       # Workflow optimization guide
 ```
 
 ## 🔧 Troubleshooting
@@ -285,9 +289,11 @@ cd github-tail
 ### 3. Habilitar GitHub Pages
 
 - Ve a **Settings** → **Pages**
-- Source: **Deploy from a branch**
-- Branch: `master` (o `main`), carpeta: `/ (root)`
+- Source: **GitHub Actions**
+- El workflow se desplegará automáticamente en el primer push
 - Espera ~2 minutos para el despliegue
+
+> **Nota:** El repositorio incluye un workflow optimizado de Pages que solo reconstruye cuando cambian archivos HTML, CSS o JS, no cuando se actualizan datos. Esto ahorra minutos de CI/CD.
 
 ### 4. Configurar Variables de Entorno (Opcional)
 
@@ -371,7 +377,8 @@ Edita `style.css` para personalizar colores, fuentes y diseño. El tema actual u
 github-tail/
 ├── .github/
 │   └── workflows/
-│       └── update-projects.yml    # Workflow de GitHub Actions (se ejecuta cada 5 min)
+│       ├── update-projects.yml    # Actualización de datos (cada 5 min)
+│       └── pages.yml              # Despliegue del sitio (solo cambios de código)
 ├── data/
 │   └── projects.json              # Datos de repos generados automáticamente
 ├── scripts/
@@ -379,7 +386,8 @@ github-tail/
 ├── app.js                         # JavaScript del cliente (auto-actualización)
 ├── index.html                     # Página web principal
 ├── style.css                      # Estilos
-└── README.md                      # Este archivo
+├── README.md                      # Este archivo
+└── WORKFLOW_OPTIMIZATION.md       # Guía de optimización de workflows
 ```
 
 ## 🔧 Solución de Problemas
