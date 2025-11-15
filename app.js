@@ -4,7 +4,7 @@ let currentPage = 1;
 const pageSize = 25;
 let lastUpdated = null;
 let pollInterval = null;
-const POLL_INTERVAL_MS = 300000; // Verificar cada 5 minutos (300 segundos)
+const POLL_INTERVAL_MS = 30000; // Verificar cada 30 segundos
 let currentLang = 'en'; // Default language
 
 // Language translations
