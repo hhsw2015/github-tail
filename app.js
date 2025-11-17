@@ -211,13 +211,25 @@ function renderPage() {
   }
 
   const totalPages = Math.max(1, Math.ceil(filteredProjects.length / pageSize));
-  document.getElementById("page-info").textContent =
-    translations[currentLang].pageOf.replace('{current}', currentPage).replace('{total}', totalPages);
+  const pageText = translations[currentLang].pageOf.replace('{current}', currentPage).replace('{total}', totalPages);
 
-  document.getElementById("first-page").disabled = currentPage <= 1;
-  document.getElementById("prev-page").disabled = currentPage <= 1;
-  document.getElementById("next-page").disabled = currentPage >= totalPages;
-  document.getElementById("last-page").disabled = currentPage >= totalPages;
+  // Update both top and bottom pagination
+  document.getElementById("page-info").textContent = pageText;
+  document.getElementById("page-info-top").textContent = pageText;
+
+  // Update button states for both paginations
+  const isFirstPage = currentPage <= 1;
+  const isLastPage = currentPage >= totalPages;
+
+  document.getElementById("first-page").disabled = isFirstPage;
+  document.getElementById("prev-page").disabled = isFirstPage;
+  document.getElementById("next-page").disabled = isLastPage;
+  document.getElementById("last-page").disabled = isLastPage;
+
+  document.getElementById("first-page-top").disabled = isFirstPage;
+  document.getElementById("prev-page-top").disabled = isFirstPage;
+  document.getElementById("next-page-top").disabled = isLastPage;
+  document.getElementById("last-page-top").disabled = isLastPage;
 }
 
 function scrollToContent() {
@@ -229,43 +241,52 @@ function scrollToContent() {
 }
 
 function setupPagination() {
-  // Botón: Primera página
-  document.getElementById("first-page").addEventListener("click", () => {
+  // Helper function for pagination actions
+  const goToFirstPage = () => {
     if (currentPage > 1) {
       currentPage = 1;
       renderPage();
       scrollToContent();
     }
-  });
+  };
 
-  // Botón: Página anterior
-  document.getElementById("prev-page").addEventListener("click", () => {
+  const goToPrevPage = () => {
     if (currentPage > 1) {
       currentPage--;
       renderPage();
       scrollToContent();
     }
-  });
+  };
 
-  // Botón: Página siguiente
-  document.getElementById("next-page").addEventListener("click", () => {
+  const goToNextPage = () => {
     const totalPages = Math.max(1, Math.ceil(filteredProjects.length / pageSize));
     if (currentPage < totalPages) {
       currentPage++;
       renderPage();
       scrollToContent();
     }
-  });
+  };
 
-  // Botón: Última página
-  document.getElementById("last-page").addEventListener("click", () => {
+  const goToLastPage = () => {
     const totalPages = Math.max(1, Math.ceil(filteredProjects.length / pageSize));
     if (currentPage < totalPages) {
       currentPage = totalPages;
       renderPage();
       scrollToContent();
     }
-  });
+  };
+
+  // Bottom pagination buttons
+  document.getElementById("first-page").addEventListener("click", goToFirstPage);
+  document.getElementById("prev-page").addEventListener("click", goToPrevPage);
+  document.getElementById("next-page").addEventListener("click", goToNextPage);
+  document.getElementById("last-page").addEventListener("click", goToLastPage);
+
+  // Top pagination buttons
+  document.getElementById("first-page-top").addEventListener("click", goToFirstPage);
+  document.getElementById("prev-page-top").addEventListener("click", goToPrevPage);
+  document.getElementById("next-page-top").addEventListener("click", goToNextPage);
+  document.getElementById("last-page-top").addEventListener("click", goToLastPage);
 }
 
 function applyFiltersKeepPage() {
