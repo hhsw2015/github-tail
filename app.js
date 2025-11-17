@@ -42,7 +42,14 @@ const translations = {
 async function loadProjects(isAutoRefresh = false) {
   try {
     // Cargar desde GitHub raw para obtener siempre la última versión
-    const res = await fetch("https://raw.githubusercontent.com/alcastelo/github-tail/refs/heads/master/data/projects.json?cb=" + Date.now());
+    const res = await fetch("https://raw.githubusercontent.com/alcastelo/github-tail/refs/heads/master/data/projects.json?cb=" + Date.now(), {
+      cache: 'no-store',
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      }
+    });
     const data = await res.json();
 
     // Detectar si hay cambios
