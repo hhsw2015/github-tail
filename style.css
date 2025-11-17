@@ -13,6 +13,18 @@ body {
   position:relative;
 }
 
+.sub-info {
+  font-size:0.9rem;
+  color:#94a3b8;
+  margin:0.5rem 0;
+}
+
+.sub-info-small {
+  font-size:0.85rem;
+  color:#64748b;
+  margin:0.5rem 0;
+}
+
 .language-switcher {
   position:absolute;
   top:1rem;
@@ -168,6 +180,11 @@ body {
   display:flex;
   align-items:center;
   gap:0.5rem;
+  margin-right:1rem;
+}
+
+.controls label:last-child {
+  margin-right:0;
 }
 
 .controls input {
@@ -181,6 +198,10 @@ body {
 .controls input:focus {
   outline:none;
   border-color:#3b82f6;
+}
+
+.controls input[type="number"] {
+  width:80px;
 }
 
 .meta {
@@ -275,6 +296,15 @@ body {
   flex-wrap:wrap;
 }
 
+.pagination.pagination-top {
+  margin-top:1rem;
+  margin-bottom:1rem;
+}
+
+.pagination.pagination-bottom {
+  margin-top:2rem;
+}
+
 .pagination button {
   padding:0.5rem 1rem;
   background:#020617;
@@ -297,7 +327,8 @@ body {
   cursor:not-allowed;
 }
 
-.pagination #page-info {
+.pagination #page-info,
+.pagination #page-info-top {
   padding:0.5rem 1rem;
   font-size:0.95rem;
   color:#cbd5e1;
@@ -306,7 +337,9 @@ body {
 
 /* Botones de primera y última con estilo diferenciado */
 .pagination #first-page,
-.pagination #last-page {
+.pagination #last-page,
+.pagination #first-page-top,
+.pagination #last-page-top {
   font-weight:600;
 }
 
@@ -321,7 +354,8 @@ body {
     font-size:0.85rem;
   }
 
-  .pagination #page-info {
+  .pagination #page-info,
+  .pagination #page-info-top {
     width:100%;
     text-align:center;
     order:-1;

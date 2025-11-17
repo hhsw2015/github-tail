@@ -43,12 +43,7 @@ async function loadProjects(isAutoRefresh = false) {
   try {
     // Cargar desde GitHub raw para obtener siempre la última versión
     const res = await fetch("https://raw.githubusercontent.com/alcastelo/github-tail/refs/heads/master/data/projects.json?cb=" + Date.now(), {
-      cache: 'no-store',
-      headers: {
-        'Cache-Control': 'no-cache, no-store, must-revalidate',
-        'Pragma': 'no-cache',
-        'Expires': '0'
-      }
+      cache: 'no-store'
     });
     const data = await res.json();
 
@@ -173,63 +168,49 @@ function updateMeta(data) {
 
 function renderPage() {
   const listEl = document.getElementById("projects-list");
-  listEl.innerHTML = "";
-
   const start = (currentPage - 1) * pageSize;
-  const end = start + pageSize;
-  const pageItems = filteredProjects.slice(start, end);
+  const pageItems = filteredProjects.slice(start, start + pageSize);
 
+  // Render project items
   if (pageItems.length === 0) {
     listEl.innerHTML = `<li>${translations[currentLang].noResults}</li>`;
   } else {
-    for (const repo of pageItems) {
+    const fragment = document.createDocumentFragment();
+    pageItems.forEach(repo => {
       const li = document.createElement("li");
       li.className = "project-item";
-
-      const updated = repo.updated_at
-        ? new Date(repo.updated_at).toLocaleString()
-        : translations[currentLang].unknown;
-
-      const ownerInfo = repo.owner
-        ? `<a href="${repo.owner.html_url}" target="_blank" rel="noopener noreferrer" class="owner-link">${repo.owner.login}</a> /`
-        : '';
-
       li.innerHTML = `
         <div class="repo-header">
-          ${repo.owner && repo.owner.avatar_url ? `<img src="${repo.owner.avatar_url}" alt="${repo.owner.login}" class="owner-avatar">` : ''}
-          <h2>${ownerInfo} <a href="${repo.html_url}" target="_blank" rel="noopener noreferrer">${repo.name}</a></h2>
+          ${repo.owner?.avatar_url ? `<img src="${repo.owner.avatar_url}" alt="${repo.owner.login}" class="owner-avatar" loading="lazy">` : ''}
+          <h2>${repo.owner ? `<a href="${repo.owner.html_url}" target="_blank" rel="noopener noreferrer" class="owner-link">${repo.owner.login}</a> /` : ''} <a href="${repo.html_url}" target="_blank" rel="noopener noreferrer">${repo.name}</a></h2>
         </div>
-        <p>${repo.description ? repo.description : `<em>${translations[currentLang].noDescription}</em>`}</p>
+        <p>${repo.description || `<em>${translations[currentLang].noDescription}</em>`}</p>
         <div class="meta-row">
           <span>⭐ ${repo.stargazers_count}</span>
-          <span>${repo.language ?? "—"}</span>
-          <span>${translations[currentLang].updated}${updated}</span>
+          <span>${repo.language || "—"}</span>
+          <span>${translations[currentLang].updated}${repo.updated_at ? new Date(repo.updated_at).toLocaleString() : translations[currentLang].unknown}</span>
         </div>
       `;
-      listEl.appendChild(li);
-    }
+      fragment.appendChild(li);
+    });
+    listEl.innerHTML = "";
+    listEl.appendChild(fragment);
   }
 
+  // Update pagination controls
   const totalPages = Math.max(1, Math.ceil(filteredProjects.length / pageSize));
   const pageText = translations[currentLang].pageOf.replace('{current}', currentPage).replace('{total}', totalPages);
-
-  // Update both top and bottom pagination
-  document.getElementById("page-info").textContent = pageText;
-  document.getElementById("page-info-top").textContent = pageText;
-
-  // Update button states for both paginations
   const isFirstPage = currentPage <= 1;
   const isLastPage = currentPage >= totalPages;
 
-  document.getElementById("first-page").disabled = isFirstPage;
-  document.getElementById("prev-page").disabled = isFirstPage;
-  document.getElementById("next-page").disabled = isLastPage;
-  document.getElementById("last-page").disabled = isLastPage;
-
-  document.getElementById("first-page-top").disabled = isFirstPage;
-  document.getElementById("prev-page-top").disabled = isFirstPage;
-  document.getElementById("next-page-top").disabled = isLastPage;
-  document.getElementById("last-page-top").disabled = isLastPage;
+  ['', '-top'].forEach(suffix => {
+    const pageInfo = document.getElementById(`page-info${suffix}`);
+    if (pageInfo) pageInfo.textContent = pageText;
+    ['first-page', 'prev-page', 'next-page', 'last-page'].forEach((id, i) => {
+      const btn = document.getElementById(`${id}${suffix}`);
+      if (btn) btn.disabled = i < 2 ? isFirstPage : isLastPage;
+    });
+  });
 }
 
 function scrollToContent() {
@@ -290,43 +271,22 @@ function setupPagination() {
 }
 
 function applyFiltersKeepPage() {
-  // Aplica filtros sin resetear la página actual
   const searchTerm = document.getElementById("search-input").value.toLowerCase().trim();
   const minStars = parseInt(document.getElementById("min-stars-input").value || "0", 10);
 
-  filteredProjects = projects.filter((p) => {
-    // Filtro de estrellas
-    const meetsStarRequirement = (p.stargazers_count || 0) >= minStars;
+  filteredProjects = projects.filter(p =>
+    (p.stargazers_count || 0) >= minStars &&
+    (!searchTerm ||
+      (p.full_name || p.name || "").toLowerCase().includes(searchTerm) ||
+      (p.description || "").toLowerCase().includes(searchTerm))
+  );
 
-    // Filtro de búsqueda
-    const meetsSearchRequirement = !searchTerm || (() => {
-      const name = (p.full_name || p.name || "").toLowerCase();
-      const desc = (p.description || "").toLowerCase();
-      return name.includes(searchTerm) || desc.includes(searchTerm);
-    })();
-
-    return meetsStarRequirement && meetsSearchRequirement;
-  });
-
-  // No cambiar currentPage, solo re-renderizar
   renderPage();
 }
 
 function applyFilters() {
-  // Aplica filtros y resetea a página 1
-  applyFiltersKeepPage();
   currentPage = 1;
-  renderPage();
-}
-
-function setupSearch() {
-  const input = document.getElementById("search-input");
-  input.addEventListener("input", applyFilters);
-}
-
-function setupMinStarsFilter() {
-  const input = document.getElementById("min-stars-input");
-  input.addEventListener("input", applyFilters);
+  applyFiltersKeepPage();
 }
 
 // Language switching functionality
@@ -392,8 +352,11 @@ function initLanguage() {
 document.addEventListener("DOMContentLoaded", () => {
   initLanguage();
   setupPagination();
-  setupSearch();
-  setupMinStarsFilter();
+
+  // Setup filters
+  document.getElementById("search-input").addEventListener("input", applyFilters);
+  document.getElementById("min-stars-input").addEventListener("input", applyFilters);
+
   loadProjects();
   startAutoRefresh();
 });
