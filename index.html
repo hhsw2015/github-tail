@@ -2,81 +2,40 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title data-en="Latest Updated Repos on GitHub" data-es="Últimos repos actualizados en GitHub">Latest Updated Repos on GitHub</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="description" content="Real-time updated GitHub repositories with minimum 20 stars">
-  <link rel="stylesheet" href="style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+
+  <!-- Primary Meta Tags (will be overridden by React Helmet) -->
+  <meta name="description" content="Track up to 500 of the most recently updated public GitHub repositories with 20+ stars in real-time. Auto-refreshed every 5 minutes via GitHub Actions.">
+  <title>GitHub Tail - Real-Time Updated Repositories | Live Dashboard</title>
+
+  <!-- Preconnect to external domains for performance -->
+  <link rel="preconnect" href="https://raw.githubusercontent.com" crossorigin>
+  <link rel="dns-prefetch" href="https://raw.githubusercontent.com">
+
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="/github-tail/manifest.json">
+
+  <!-- Favicon (placeholder - should be created) -->
+  <link rel="icon" type="image/svg+xml" href="/github-tail/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/github-tail/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/github-tail/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/github-tail/apple-touch-icon.png">
+
+  <!-- Theme Color -->
+  <meta name="theme-color" content="#020617">
+  <meta name="msapplication-TileColor" content="#020617">
+
+  <!-- Performance Optimization -->
+  <meta httpEquiv="x-dns-prefetch-control" content="on">
+
+  <!-- Security Headers -->
+  <meta httpEquiv="X-Content-Type-Options" content="nosniff">
+  <meta httpEquiv="X-Frame-Options" content="SAMEORIGIN">
+  <meta httpEquiv="X-XSS-Protection" content="1; mode=block">
+  <meta name="referrer" content="origin-when-cross-origin">
 </head>
 <body>
-  <header class="header">
-    <div class="language-switcher">
-      <button id="lang-en" class="lang-btn active" data-lang="en">🇬🇧 EN</button>
-      <button id="lang-es" class="lang-btn" data-lang="es">🇪🇸 ES</button>
-    </div>
-    <h1 data-en="🔥 GitHub Tail - Real-Time Updated Repos" data-es="🔥 GitHub Tail - Repos Actualizados en Tiempo Real">🔥 GitHub Tail - Real-Time Updated Repos</h1>
-    <p data-en="Up to 500 of the most recently updated public repositories on GitHub (with minimum 20 stars)" data-es="Hasta 500 de los repositorios públicos más recientemente actualizados en GitHub (con mínimo 20 estrellas)">Up to 500 of the most recently updated public repositories on GitHub (with minimum 20 stars)</p>
-    <p class="sub-info" data-en="Automatic update every ~5 minutes via GitHub Actions" data-es="Actualización automática cada ~5 minutos mediante GitHub Actions">Automatic update every ~5 minutes via GitHub Actions</p>
-    <p class="sub-info-small" data-en="💡 The page auto-refreshes without losing your current position" data-es="💡 La página se actualiza automáticamente sin perder tu posición actual">💡 The page auto-refreshes without losing your current position</p>
-  </header>
-
-  <main class="container">
-    <section class="controls">
-      <label>
-        <span data-en="Search:" data-es="Buscar:">Search:</span>
-        <input type="text" id="search-input" data-placeholder-en="Filter by name or description..." data-placeholder-es="Filtrar por nombre o descripción..." placeholder="Filter by name or description...">
-      </label>
-      <label>
-        <span data-en="Minimum stars:" data-es="Estrellas mínimas:">Minimum stars:</span>
-        <input type="number" id="min-stars-input" value="20" min="0">
-      </label>
-    </section>
-
-    <section id="meta" class="meta">
-      <span id="last-updated" data-en="Loading update date..." data-es="Cargando fecha de actualización...">Loading update date...</span>
-      <span id="total-count"></span>
-    </section>
-
-    <section class="auto-refresh-info">
-      <span id="refresh-indicator" class="refresh-indicator" data-en="Starting auto-refresh..." data-es="Iniciando auto-refresh...">Starting auto-refresh...</span>
-    </section>
-
-    <section class="pagination pagination-top">
-      <button id="first-page-top" data-title-en="Go to first page" data-title-es="Ir a la primera página" data-en="⏮ First" data-es="⏮ Primera">⏮ First</button>
-      <button id="prev-page-top" data-title-en="Previous page" data-title-es="Página anterior" data-en="← Previous" data-es="← Anterior">← Previous</button>
-      <span id="page-info-top"></span>
-      <button id="next-page-top" data-title-en="Next page" data-title-es="Página siguiente" data-en="Next →" data-es="Siguiente →">Next →</button>
-      <button id="last-page-top" data-title-en="Go to last page" data-title-es="Ir a la última página" data-en="Last ⏭" data-es="Última ⏭">Last ⏭</button>
-    </section>
-
-    <section id="projects-container">
-      <ul id="projects-list" class="projects-list"></ul>
-    </section>
-
-    <section class="pagination pagination-bottom">
-      <button id="first-page" data-title-en="Go to first page" data-title-es="Ir a la primera página" data-en="⏮ First" data-es="⏮ Primera">⏮ First</button>
-      <button id="prev-page" data-title-en="Previous page" data-title-es="Página anterior" data-en="← Previous" data-es="← Anterior">← Previous</button>
-      <span id="page-info"></span>
-      <button id="next-page" data-title-en="Next page" data-title-es="Página siguiente" data-en="Next →" data-es="Siguiente →">Next →</button>
-      <button id="last-page" data-title-en="Go to last page" data-title-es="Ir a la última página" data-en="Last ⏭" data-es="Última ⏭">Last ⏭</button>
-    </section>
-  </main>
-
-  <footer class="footer">
-    <div class="footer-content">
-      <div class="footer-info">
-        <span data-en="Automatically generated from GitHub Actions ·" data-es="Generado automáticamente desde GitHub Actions ·">Automatically generated from GitHub Actions ·</span>
-        <a href="https://github.com/alcastelo/github-tail" target="_blank" rel="noopener noreferrer" data-en="View repository" data-es="Ver repositorio">View repository</a>
-      </div>
-
-      <div class="kofi-container">
-        <span class="kofi-text" data-en="☕ Enjoying this? My code runs on caffeine!" data-es="☕ ¿Te gusta esto? ¡Mi código funciona con cafeína!">☕ Enjoying this? My code runs on caffeine!</span>
-        <a href='https://ko-fi.com/H2H71OI1ZN' target='_blank' rel="noopener noreferrer" class="kofi-button">
-          <img height='36' style='border:0px;height:36px;' src='https://storage.ko-fi.com/cdn/kofi2.png?v=3' border='0' alt='Buy Me a Coffee at ko-fi.com' />
-        </a>
-      </div>
-    </div>
-  </footer>
-
-  <script src="app.js"></script>
+  <div id="root"></div>
+  <script type="module" src="/src/main.jsx"></script>
 </body>
 </html>

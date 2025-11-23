@@ -14,6 +14,7 @@
 
 ## ✨ Features
 
+- ⚛️ **Built with React** - Modern React 18 application with Vite for blazing-fast development
 - 🔄 **Auto-refresh every ~5 minutes** - GitHub Actions automatically fetches latest repos
 - 📊 **Up to 500 repositories** tracked in real-time with 20+ stars minimum (shows fewer if less are available)
 - 🎯 **Smart client-side updates** - Page auto-refreshes without losing your position
@@ -42,12 +43,13 @@
 1. **GitHub Actions** runs every 5 minutes (`*/5 * * * *` cron)
 2. **Python script** queries GitHub Search API for recently updated repos
 3. **JSON data** is committed and pushed to the repository
-4. **Static webpage** auto-refreshes and displays the latest repos
+4. **React app** auto-refreshes and displays the latest repos
 5. **Smart notifications** alert users when new repos are available
 
 ## 📋 Requirements
 
 - GitHub account (for GitHub Actions and Pages)
+- Node.js 20+ and npm (for local development only)
 - No server or backend required!
 - All free tier limits are sufficient for this project
 
@@ -58,6 +60,7 @@
 ```bash
 git clone https://github.com/alcastelo/github-tail.git
 cd github-tail
+npm install  # Install dependencies for local development
 ```
 
 ### 2. Enable GitHub Actions
@@ -73,7 +76,7 @@ cd github-tail
 - The workflow will automatically deploy on the first push
 - Wait ~2 minutes for deployment
 
-> **Note:** The repository includes an optimized Pages workflow that only rebuilds when HTML, CSS, or JS files change, not when data updates. This saves CI/CD minutes.
+> **Note:** The repository includes an optimized Pages workflow that only rebuilds when React source files change, not when data updates. This saves CI/CD minutes.
 
 ### 4. Configure Environment Variables (Optional)
 
@@ -93,6 +96,26 @@ Trigger the workflow manually:
 - Click **Run workflow** → **Run workflow**
 
 Your dashboard will be live at: `https://YOUR_USERNAME.github.io/github-tail/`
+
+## 💻 Local Development
+
+Run the React app locally with hot reload:
+
+```bash
+# Install dependencies (if not already done)
+npm install
+
+# Start development server
+npm run dev
+# Visit http://localhost:5173/github-tail/
+
+# Build for production
+npm run build
+
+# Preview production build
+npm run preview
+# Visit http://localhost:4173/github-tail/
+```
 
 ## ⚙️ Configuration
 
@@ -116,10 +139,10 @@ Available options:
 
 ### Client-Side Refresh
 
-The webpage auto-checks for updates every 5 minutes. To change this, edit `app.js`:
+The React app auto-checks for updates every 30 seconds. To change this, edit `src/hooks/useAutoRefresh.js`:
 
 ```javascript
-const POLL_INTERVAL_MS = 300000; // 5 minutes in milliseconds
+const POLL_INTERVAL_MS = 30000; // 30 seconds in milliseconds
 ```
 
 ### Repository Filters
@@ -146,10 +169,18 @@ env:
 
 ### Styling
 
-Edit `style.css` to customize colors, fonts, and layout. The current theme uses:
+Edit `src/App.css` to customize colors, fonts, and layout. The current theme uses:
 - Dark background (`#020617`)
 - Blue accents (`#3b82f6`)
 - Modern card-based layout
+
+### Adding New Features
+
+The React architecture makes it easy to extend:
+- Add new components in `src/components/`
+- Create custom hooks in `src/hooks/`
+- Update translations in `src/utils/translations.js`
+- Modify the main app logic in `src/App.jsx`
 
 ## 📁 Project Structure
 
@@ -158,15 +189,34 @@ github-tail/
 ├── .github/
 │   └── workflows/
 │       ├── update-projects.yml    # Data update (runs every 5 min)
-│       └── pages.yml              # Site deployment (only on code changes)
+│       └── pages.yml              # React build and deployment
 ├── data/
 │   └── projects.json              # Auto-generated repo data
 ├── scripts/
 │   └── update_projects.py         # Python script to fetch repos
-├── app.js                         # Client-side JavaScript (auto-refresh)
-├── index.html                     # Main webpage
-├── style.css                      # Styling
+├── src/
+│   ├── components/                # React components
+│   │   ├── Header.jsx
+│   │   ├── Controls.jsx
+│   │   ├── ProjectList.jsx
+│   │   ├── ProjectItem.jsx
+│   │   ├── Pagination.jsx
+│   │   ├── Footer.jsx
+│   │   ├── UpdateNotification.jsx
+│   │   └── RefreshIndicator.jsx
+│   ├── hooks/                     # Custom React hooks
+│   │   ├── useLanguage.jsx        # Language context
+│   │   └── useAutoRefresh.js      # Auto-refresh logic
+│   ├── utils/
+│   │   └── translations.js        # Translation strings
+│   ├── App.jsx                    # Main app component
+│   ├── App.css                    # Global styles
+│   └── main.jsx                   # React entry point
+├── index.html                     # HTML entry point for Vite
+├── vite.config.js                 # Vite configuration
+├── package.json                   # Node.js dependencies
 ├── README.md                      # This file
+├── CLAUDE.md                      # AI assistant guide
 └── WORKFLOW_OPTIMIZATION.md       # Workflow optimization guide
 ```
 
@@ -190,6 +240,34 @@ GitHub provides 5,000 API requests/hour with authentication (automatically used)
 - Check if `data/projects.json` was updated in the repository
 - Verify GitHub Pages is enabled and deployed from correct branch
 
+### Build Errors
+
+- Ensure Node.js 20+ is installed: `node --version`
+- Clear node_modules and reinstall: `rm -rf node_modules package-lock.json && npm install`
+- Verify all `.jsx` files have the correct extension
+- Run `npm run build` locally to test before pushing
+
+### Development Server Issues
+
+- Check if port 5173 is already in use
+- Clear Vite cache: `rm -rf node_modules/.vite`
+- Restart the dev server: `npm run dev`
+
+## 🔍 SEO & Discoverability
+
+This project implements comprehensive SEO optimization for maximum organic traffic:
+
+- **Meta Tags** - Complete title, description, and keyword optimization
+- **Open Graph** - Beautiful preview cards on social media (Facebook, LinkedIn)
+- **Twitter Cards** - Optimized sharing on Twitter/X
+- **Schema.org** - Structured data (JSON-LD) for rich search results
+- **Sitemap.xml** - Helps search engines discover all pages
+- **Robots.txt** - Proper crawling directives for search bots
+- **International SEO** - hreflang tags for English/Spanish versions
+- **PWA Manifest** - Progressive Web App capabilities
+
+For detailed SEO documentation, see [SEO.md](SEO.md).
+
 ## 🤝 Contributing
 
 Contributions are welcome! Feel free to:
@@ -204,7 +282,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🙏 Acknowledgments
 
-- Built with ❤️ using GitHub Actions and GitHub Pages
+- Built with ❤️ using [React](https://react.dev/), [Vite](https://vite.dev/), GitHub Actions and GitHub Pages
 - Powered by [GitHub Search API](https://docs.github.com/en/rest/search)
 - This is an experiment using vibe coding
 
@@ -234,6 +312,7 @@ If you find this project useful and want to fuel more coding experiments (and my
 
 ## ✨ Características
 
+- ⚛️ **Construido con React** - Aplicación moderna con React 18 y Vite para desarrollo ultra-rápido
 - 🔄 **Actualización automática cada ~5 minutos** - GitHub Actions obtiene los últimos repos automáticamente
 - 📊 **Hasta 500 repositorios** rastreados en tiempo real con mínimo 20 estrellas (muestra menos si hay menos disponibles)
 - 🎯 **Actualizaciones inteligentes del cliente** - La página se actualiza automáticamente sin perder tu posición
@@ -262,12 +341,13 @@ If you find this project useful and want to fuel more coding experiments (and my
 1. **GitHub Actions** se ejecuta cada 5 minutos (cron `*/5 * * * *`)
 2. **Script Python** consulta la API de GitHub Search para repos actualizados recientemente
 3. **Datos JSON** se confirman y envían al repositorio
-4. **Página web estática** se actualiza automáticamente y muestra los últimos repos
+4. **Aplicación React** se actualiza automáticamente y muestra los últimos repos
 5. **Notificaciones inteligentes** alertan a los usuarios cuando hay nuevos repos disponibles
 
 ## 📋 Requisitos
 
 - Cuenta de GitHub (para GitHub Actions y Pages)
+- Node.js 20+ y npm (solo para desarrollo local)
 - ¡No se requiere servidor ni backend!
 - Todos los límites gratuitos son suficientes para este proyecto
 
@@ -278,6 +358,7 @@ If you find this project useful and want to fuel more coding experiments (and my
 ```bash
 git clone https://github.com/alcastelo/github-tail.git
 cd github-tail
+npm install  # Instalar dependencias para desarrollo local
 ```
 
 ### 2. Habilitar GitHub Actions
@@ -293,7 +374,7 @@ cd github-tail
 - El workflow se desplegará automáticamente en el primer push
 - Espera ~2 minutos para el despliegue
 
-> **Nota:** El repositorio incluye un workflow optimizado de Pages que solo reconstruye cuando cambian archivos HTML, CSS o JS, no cuando se actualizan datos. Esto ahorra minutos de CI/CD.
+> **Nota:** El repositorio incluye un workflow optimizado de Pages que solo reconstruye cuando cambian los archivos fuente de React, no cuando se actualizan datos. Esto ahorra minutos de CI/CD.
 
 ### 4. Configurar Variables de Entorno (Opcional)
 
@@ -313,6 +394,26 @@ Activa el workflow manualmente:
 - Haz clic en **Run workflow** → **Run workflow**
 
 Tu dashboard estará en vivo en: `https://TU_USUARIO.github.io/github-tail/`
+
+## 💻 Desarrollo Local
+
+Ejecuta la aplicación React localmente con recarga en caliente:
+
+```bash
+# Instalar dependencias (si aún no lo has hecho)
+npm install
+
+# Iniciar servidor de desarrollo
+npm run dev
+# Visita http://localhost:5173/github-tail/
+
+# Construir para producción
+npm run build
+
+# Previsualizar build de producción
+npm run preview
+# Visita http://localhost:4173/github-tail/
+```
 
 ## ⚙️ Configuración
 
@@ -336,10 +437,10 @@ Opciones disponibles:
 
 ### Actualización del Cliente
 
-La página web verifica actualizaciones automáticamente cada 5 minutos. Para cambiar esto, edita `app.js`:
+La aplicación React verifica actualizaciones automáticamente cada 30 segundos. Para cambiar esto, edita `src/hooks/useAutoRefresh.js`:
 
 ```javascript
-const POLL_INTERVAL_MS = 300000; // 5 minutos en milisegundos
+const POLL_INTERVAL_MS = 30000; // 30 segundos en milisegundos
 ```
 
 ### Filtros de Repositorio
@@ -366,10 +467,18 @@ env:
 
 ### Estilos
 
-Edita `style.css` para personalizar colores, fuentes y diseño. El tema actual usa:
+Edita `src/App.css` para personalizar colores, fuentes y diseño. El tema actual usa:
 - Fondo oscuro (`#020617`)
 - Acentos azules (`#3b82f6`)
 - Diseño moderno basado en tarjetas
+
+### Añadir Nuevas Funcionalidades
+
+La arquitectura React facilita la extensión:
+- Añade nuevos componentes en `src/components/`
+- Crea hooks personalizados en `src/hooks/`
+- Actualiza traducciones en `src/utils/translations.js`
+- Modifica la lógica principal en `src/App.jsx`
 
 ## 📁 Estructura del Proyecto
 
@@ -378,15 +487,34 @@ github-tail/
 ├── .github/
 │   └── workflows/
 │       ├── update-projects.yml    # Actualización de datos (cada 5 min)
-│       └── pages.yml              # Despliegue del sitio (solo cambios de código)
+│       └── pages.yml              # Build y despliegue de React
 ├── data/
 │   └── projects.json              # Datos de repos generados automáticamente
 ├── scripts/
 │   └── update_projects.py         # Script Python para obtener repos
-├── app.js                         # JavaScript del cliente (auto-actualización)
-├── index.html                     # Página web principal
-├── style.css                      # Estilos
+├── src/
+│   ├── components/                # Componentes React
+│   │   ├── Header.jsx
+│   │   ├── Controls.jsx
+│   │   ├── ProjectList.jsx
+│   │   ├── ProjectItem.jsx
+│   │   ├── Pagination.jsx
+│   │   ├── Footer.jsx
+│   │   ├── UpdateNotification.jsx
+│   │   └── RefreshIndicator.jsx
+│   ├── hooks/                     # Hooks personalizados de React
+│   │   ├── useLanguage.jsx        # Contexto de idioma
+│   │   └── useAutoRefresh.js      # Lógica de auto-actualización
+│   ├── utils/
+│   │   └── translations.js        # Cadenas de traducción
+│   ├── App.jsx                    # Componente principal
+│   ├── App.css                    # Estilos globales
+│   └── main.jsx                   # Punto de entrada React
+├── index.html                     # Punto de entrada HTML para Vite
+├── vite.config.js                 # Configuración de Vite
+├── package.json                   # Dependencias de Node.js
 ├── README.md                      # Este archivo
+├── CLAUDE.md                      # Guía para asistente IA
 └── WORKFLOW_OPTIMIZATION.md       # Guía de optimización de workflows
 ```
 
@@ -410,6 +538,34 @@ GitHub proporciona 5,000 solicitudes de API/hora con autenticación (usada autom
 - Verifica si `data/projects.json` fue actualizado en el repositorio
 - Verifica que GitHub Pages esté habilitado y desplegado desde la rama correcta
 
+### Errores de Build
+
+- Asegúrate de tener Node.js 20+: `node --version`
+- Limpia node_modules y reinstala: `rm -rf node_modules package-lock.json && npm install`
+- Verifica que todos los archivos `.jsx` tengan la extensión correcta
+- Ejecuta `npm run build` localmente para probar antes de hacer push
+
+### Problemas con el Servidor de Desarrollo
+
+- Verifica si el puerto 5173 ya está en uso
+- Limpia la caché de Vite: `rm -rf node_modules/.vite`
+- Reinicia el servidor de desarrollo: `npm run dev`
+
+## 🔍 SEO y Descubribilidad
+
+Este proyecto implementa optimización SEO integral para máximo tráfico orgánico:
+
+- **Metaetiquetas** - Optimización completa de título, descripción y palabras clave
+- **Open Graph** - Tarjetas de vista previa hermosas en redes sociales (Facebook, LinkedIn)
+- **Twitter Cards** - Compartición optimizada en Twitter/X
+- **Schema.org** - Datos estructurados (JSON-LD) para resultados de búsqueda enriquecidos
+- **Sitemap.xml** - Ayuda a los motores de búsqueda a descubrir todas las páginas
+- **Robots.txt** - Directivas de rastreo adecuadas para bots de búsqueda
+- **SEO Internacional** - Etiquetas hreflang para versiones en inglés/español
+- **Manifest PWA** - Capacidades de Aplicación Web Progresiva
+
+Para documentación detallada de SEO, consulta [SEO.md](SEO.md).
+
 ## 🤝 Contribuir
 
 ¡Las contribuciones son bienvenidas! Siéntete libre de:
@@ -424,7 +580,7 @@ Este proyecto está licenciado bajo la Licencia MIT - ver el archivo [LICENSE](L
 
 ## 🙏 Agradecimientos
 
-- Construido con ❤️ usando GitHub Actions y GitHub Pages
+- Construido con ❤️ usando [React](https://react.dev/), [Vite](https://vite.dev/), GitHub Actions y GitHub Pages
 - Impulsado por [GitHub Search API](https://docs.github.com/en/rest/search)
 - Este es un experimento usando vibe coding
 

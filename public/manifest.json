@@ -1,0 +1,28 @@
+{
+  "name": "GitHub Tail - Real-Time Updated Repositories",
+  "short_name": "GitHub Tail",
+  "description": "Track up to 500 of the most recently updated public GitHub repositories with 20+ stars in real-time",
+  "start_url": "/github-tail/",
+  "scope": "/github-tail/",
+  "display": "standalone",
+  "background_color": "#020617",
+  "theme_color": "#020617",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/github-tail/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/github-tail/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["developer", "productivity", "utilities"],
+  "lang": "en",
+  "dir": "ltr"
+}
