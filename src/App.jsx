@@ -24,6 +24,7 @@ const AppContent = () => {
   const [totalCount, setTotalCount] = useState(0);
   const [showNotification, setShowNotification] = useState(false);
   const isInitialLoad = useRef(true);
+  const lastUpdatedRef = useRef(null);
 
   const loadProjects = useCallback(async () => {
     try {
@@ -34,36 +35,41 @@ const AppContent = () => {
       const data = await res.json();
 
       const newLastUpdated = data.last_updated;
-      const hasChanges = lastUpdated && newLastUpdated !== lastUpdated;
+      const hasChanges = lastUpdatedRef.current && newLastUpdated !== lastUpdatedRef.current;
 
-      setLastUpdated(newLastUpdated);
-      setProjects(data.projects || []);
-      setTotalCount(data.count || 0);
+      // Only update state if data actually changed
+      if (hasChanges || isInitialLoad.current) {
+        lastUpdatedRef.current = newLastUpdated;
+        setLastUpdated(newLastUpdated);
+        setProjects(data.projects || []);
+        setTotalCount(data.count || 0);
 
-      // Set default min stars on initial load
-      if (isInitialLoad.current && data.source?.min_stars) {
-        setMinStars(data.source.min_stars.toString());
+        // Set default min stars on initial load
+        if (isInitialLoad.current && data.source?.min_stars) {
+          setMinStars(data.source.min_stars.toString());
+        }
+
+        // Show notification and reset to page 1 if data changed (not on initial load)
+        if (hasChanges && !isInitialLoad.current) {
+          setShowNotification(true);
+          setCurrentPage(1);
+        }
+
+        isInitialLoad.current = false;
       }
-
-      // Show notification if data changed (not on initial load)
-      if (hasChanges && !isInitialLoad.current) {
-        setShowNotification(true);
-        setCurrentPage(1); // Reset to page 1 on changes
-      }
-
-      isInitialLoad.current = false;
     } catch (err) {
       console.error('Error loading projects:', err);
       throw err;
     }
-  }, [lastUpdated]);
+  }, []);
 
   const { status, lastCheckTime } = useAutoRefresh(loadProjects);
 
-  // Load projects on mount
+  // Load projects on mount only (not when loadProjects changes)
   useEffect(() => {
     loadProjects();
-  }, [loadProjects]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Apply filters when projects, searchTerm, or minStars change
   useEffect(() => {
