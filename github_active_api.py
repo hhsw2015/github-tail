@@ -12,15 +12,19 @@ import requests
 # 参数解析
 parser = argparse.ArgumentParser(description="GitHub 最近更新项目抓取工具")
 parser.add_argument("-k", "--keyword", type=str, help="搜索关键字")
-parser.add_argument("--max-results", type=int, help="最多返回数量")
-parser.add_argument("--min-stars", type=int, help="最低星数")
+parser.add_argument("--max-results", type=str, help="最多返回数量")
+parser.add_argument("--min-stars", type=str, help="最低星数")
 parser.add_argument("--out", type=str, help="输出文件路径")
 parser.add_argument("--token", type=str, help="GitHub Token")
 args = parser.parse_args()
 
 # 参数最终值
-max_results = args.max_results or int(os.environ.get("MAX_RESULTS", "50"))
-min_stars = args.min_stars or int(os.environ.get("MIN_STARS", "20"))
+max_results = int(args.max_results) or int(os.environ.get("MAX_RESULTS", "50"))
+min_stars = 20
+if int(args.min_stars) >= 0:
+    min_stars = int(args.min_stars)
+else:
+    min_stars = int(os.environ.get("MIN_STARS", "20"))
 out_path = args.out or os.environ.get("OUT_PATH", "data/projects.json")
 keyword = (args.keyword or os.environ.get("GITHUB_KEYWORD") or "").strip()
 token = args.token or os.environ.get("GH_API_TOKEN")
@@ -46,11 +50,12 @@ def get_last_updated(path):
         return None
 
 
-def format_time(iso):
+def format_time(dt_str):
+    """Convierte ISO datetime a formato para GitHub Search (YYYY-MM-DDTHH:MM:SS)"""
     try:
-        dt = datetime.fromisoformat(iso.replace("Z", "+00:00"))
+        dt = datetime.fromisoformat(dt_str.replace("Z", "+00:00"))
         return dt.strftime("%Y-%m-%dT%H:%M:%S")
-    except:
+    except Exception:
         return None
 
 
@@ -119,7 +124,8 @@ for r in repos:
         }
     )
 
-projects.sort(key=lambda x: x["updated_at"], reverse=True)
+# projects.sort(key=lambda x: x["updated_at"], reverse=True)
+projects.sort(key=lambda x: x["pushed_at"], reverse=True)
 projects = projects[:max_results]
 
 # 保存

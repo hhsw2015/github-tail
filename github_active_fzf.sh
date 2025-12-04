@@ -10,13 +10,26 @@ rm -f "$CACHE" "$INDEX" "$PREVIEW_SCRIPT"
 
 KEYWORD=""
 TOKEN=""
-if [ $# -eq 1 ] || [ $# -eq 2 ]; then
+MIN_STARS=20
+MAX_RESULTS=500
+if [ $# -eq 1 ] || [ $# -eq 2 ] || [ $# -eq 3 ] || [ $# -eq 4 ]; then
   # 有参数：调用本地 github_active_api.py
 
   if [ $# -eq 2 ]; then
     TOKEN="$1"
     KEYWORD="$2"
     echo "使用自定义 Token 并搜索关键词：$KEYWORD"
+  elif [ $# -eq 3 ]; then
+    TOKEN="$1"
+    KEYWORD="$2"
+    MAX_RESULTS="$3"
+    echo "使用自定义 Token 并搜索关键词：$KEYWORD"
+  elif [ $# -eq 4 ]; then
+    TOKEN="$1"
+    KEYWORD="$2"
+    MAX_RESULTS="$3"
+    MIN_STARS="$4"
+    echo "使用自定义 Token 并搜索关键词：$KEYWORD MIN_STARS: $MIN_STARS"
   else
     echo "请提供Github Token"
     exit 1
@@ -32,8 +45,8 @@ if [ $# -eq 1 ] || [ $# -eq 2 ]; then
   ./github_active_api.py -k "$KEYWORD" \
     --token "$TOKEN" \
     --out "$CACHE" \
-    --min-stars 20 \
-    --max-results 500 || {
+    --min-stars "$MIN_STARS" \
+    --max-results "$MAX_RESULTS" || {
     echo "github_active_api.py 执行失败"
     exit 1
   }
@@ -58,7 +71,7 @@ echo "数据已准备好（共 $(jq '.projects | length' "$CACHE") 个项目）"
 jq -r '
   .projects[] 
   | [
-      .name,
+      .full_name,
       .full_name,
       .owner.login,
       .stargazers_count // 0,
@@ -67,8 +80,8 @@ jq -r '
       (.description // "无描述")
     ] | @tsv
 ' "$CACHE" |
-  sort -t $'\t' -k2,2 -k4nr |
-  awk -F'\t' '!seen[$2]++' >"$INDEX"
+  #sort -t $'\t' -k2,2 -k4nr |
+  awk -F'\t' '!seen[$2]++ {print}' >"$INDEX"
 
 # 生成一个真正的预览脚本（完全没有引号问题）
 cat >"$PREVIEW_SCRIPT" <<'EOF'
@@ -92,7 +105,8 @@ EOF
 chmod +x "$PREVIEW_SCRIPT"
 
 # 两个排序列表
-list_time=$(cut -f1,2 "$INDEX")
+#list_time=$(cut -f1,2 "$INDEX")
+list_time=$(cat "$INDEX")
 list_star=$(sort -t $'\t' -k4 -nr "$INDEX" | cut -f1,2)
 
 # 启动 fzf
@@ -126,8 +140,18 @@ rm -f "$PREVIEW_SCRIPT"
 # 没选就退出
 [[ -z "$selected" ]] && exit 0
 
+# 提取所有 full_name（第2列）
+selected_repos=$(echo "$selected" | cut -f2)
+
+# 统计数量
+count=$(echo "$selected_repos" | wc -l | xargs)
+
+# 转换为逗号分隔的单行字符串（去掉换行，末尾无多余逗号）
+repos_list_copy=$(echo "$selected_repos" | paste -sd, - | sed 's/,/*/g')
+
 # 打开所有选中项目
-echo "$selected" | cut -f2 | xargs -n1 -I{} xdg-open "https://github.com/{}" 2>/dev/null ||
-  echo "$selected" | cut -f2 | xargs -n1 -I{} open "https://github.com/{}" 2>/dev/null ||
-  echo "$selected" | cut -f2 | xargs -n1 -I{} wslview "https://github.com/{}" 2>/dev/null
-echo "已打开 $(echo "$selected" | wc -l) 个项目"
+echo "$selected" | cut -f2 | xargs -n1 -I{} open "https://github.com/{}" 2>/dev/null
+echo -e "已打开 \033[1;32m${count}\033[0m 个项目："
+echo -e "${selected_repos}"
+
+echo "${repos_list_copy}" | pbcopy
