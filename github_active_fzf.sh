@@ -5,14 +5,54 @@ CACHE="/tmp/github-tail.json"
 INDEX="/tmp/github-tail.idx"
 PREVIEW_SCRIPT="/tmp/github-tail-preview.sh"
 
-# 强制清理旧文件（可选，但强烈推荐）
+# 强制清理旧文件（推荐）
 rm -f "$CACHE" "$INDEX" "$PREVIEW_SCRIPT"
 
-# 重新下载最新数据（去除10分钟缓存，始终刷新）
-curl -fsSL "$URL" -o "$CACHE" || {
-  echo "下载失败"
-  exit 1
-}
+KEYWORD=""
+TOKEN=""
+if [ $# -eq 1 ] || [ $# -eq 2 ]; then
+  # 有参数：调用本地 github_active_api.py
+
+  if [ $# -eq 2 ]; then
+    TOKEN="$1"
+    KEYWORD="$2"
+    echo "使用自定义 Token 并搜索关键词：$KEYWORD"
+  else
+    echo "请提供Github Token"
+    exit 1
+  fi
+
+  # 检查本地脚本是否存在
+  if [ ! -x "./github_active_api.py" ]; then
+    echo "错误：当前目录下不存在可执行的 ./github_active_api.py"
+    exit 1
+  fi
+
+  # 执行本地 API 脚本
+  ./github_active_api.py -k "$KEYWORD" \
+    --token "$TOKEN" \
+    --out "$CACHE" \
+    --min-stars 20 \
+    --max-results 500 || {
+    echo "github_active_api.py 执行失败"
+    exit 1
+  }
+
+  # 确保生成了有效文件
+  if [ ! -s "$CACHE" ] || ! grep -q '"projects"' "$CACHE" 2>/dev/null; then
+    echo "github_active_api.py 未生成有效 JSON 数据"
+    exit 1
+  fi
+else
+  # 无参数：使用官方热榜
+  echo "正在获取官方 GitHub 热榜..."
+  curl -fsSL "$URL" -o "$CACHE" || {
+    echo "下载官方热榜失败"
+    exit 1
+  }
+fi
+
+echo "数据已准备好（共 $(jq '.projects | length' "$CACHE") 个项目）"
 
 # 生成去重后的索引：按 full_name 去重，保留 stars 最高的
 jq -r '
@@ -56,16 +96,29 @@ list_time=$(cut -f1,2 "$INDEX")
 list_star=$(sort -t $'\t' -k4 -nr "$INDEX" | cut -f1,2)
 
 # 启动 fzf
-selected=$(printf '%s\n' "$list_time" | fzf \
-  --multi \
-  --with-nth=1 \
-  --delimiter=$'\t' \
-  --prompt="GitHub 最新活跃 > " \
-  --header="r = 按 Star 排序 Ctrl+R = 刷新 Tab 多选 Enter 打开" \
-  --preview="$PREVIEW_SCRIPT {2}" \
-  --preview-window=right:65%:wrap \
-  --bind="r:reload(printf '%s\n' \"$list_star\")+change-prompt(Star排序 > )" \
-  --bind="ctrl-r:execute-silent(curl -fsSL $URL -o $CACHE >/dev/null 2>&1)+reload(printf '%s\n' \"$list_time\")+change-prompt(GitHub 最新活跃 > )")
+selected=""
+if [[ $KEYWORD == "" ]]; then
+  selected=$(printf '%s\n' "$list_time" | fzf \
+    --multi \
+    --with-nth=1 \
+    --delimiter=$'\t' \
+    --prompt="GitHub 最新活跃 > " \
+    --header="r = 按 Star 排序 Ctrl+R = 刷新 Tab 多选 Enter 打开" \
+    --preview="$PREVIEW_SCRIPT {2}" \
+    --preview-window=right:65%:wrap \
+    --bind="r:reload(printf '%s\n' \"$list_star\")+change-prompt(Star排序 > )" \
+    --bind="ctrl-r:execute-silent(curl -fsSL $URL -o $CACHE >/dev/null 2>&1)+reload(printf '%s\n' \"$list_time\")+change-prompt(GitHub 最新活跃 > )")
+else
+  selected=$(printf '%s\n' "$list_time" | fzf \
+    --multi \
+    --with-nth=1 \
+    --delimiter=$'\t' \
+    --prompt="GitHub 最新活跃 > " \
+    --header="r = 按 Star 排序 Tab 多选 Enter 打开" \
+    --preview="$PREVIEW_SCRIPT {2}" \
+    --preview-window=right:65%:wrap \
+    --bind="r:reload(printf '%s\n' \"$list_star\")+change-prompt(Star排序 > )")
+fi
 
 # 清理临时脚本（可选）
 rm -f "$PREVIEW_SCRIPT"
